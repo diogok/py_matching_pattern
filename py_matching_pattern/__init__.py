@@ -45,8 +45,9 @@ class PatternMatchStore:
         self.__stage={}
 
     def commit(self):
+        dbcopy=deepcopy(self.__stage)
         self.__lock.acquire(blocking=True,timeout=-1)
-        self.__db=deepcopy(self.__stage)
+        self.__db=dbcopy
         self.__lock.release()
     
     def get(self,keys=[]):
