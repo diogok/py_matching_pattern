@@ -77,8 +77,8 @@ class PatternMatchStore:
                 node=node[key]
                 continue
             else:
-                if n > 0:
+                if n > 0 and key != self.default:
                     return self.__get(keys=self.__default_filled(keys=keys,n=n))
-
-            break
+                else:
+                    break
         return None

@@ -3,7 +3,7 @@ import os
 
 setup(
     name="py_matching_pattern",
-    version="0.0.1",
+    version="0.0.2",
     packages=["py_matching_pattern"],
     url='https://github.com/diogok/py_matching_pattern',
 )
