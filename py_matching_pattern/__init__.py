@@ -65,22 +65,38 @@ class PatternMatchStore:
 
         return value
 
-    def __default_filled(self,keys,n):
-        return (keys[:n]+([self.default]*(self.__keysize-n)))
+    def __default_filled(self,keys,key_mask):
+        # TODO: there is a better solution
+        new_keys=[]
+        for n in range(self.__keysize):
+            mask = key_mask[n]
+            if mask == "1":
+                new_keys.append(keys[n])
+            else:
+                new_keys.append(self.default)
+        
+        return new_keys
 
     def __get(self,keys=[]):
-        node=self.__db
-        for n in range(self.__keysize):
-            key=keys[n]
+        int_limit = pow(2,self.__keysize)
+        current=1
+        
+        while current <= int_limit:
+            key_mask = format(int_limit - current,f"0{self.__keysize}b")
+            current_keys = self.__default_filled(keys=keys,key_mask=key_mask)
 
-            if key in node:
-                if n+1 == self.__keysize:
-                    return node[key]
-                node=node[key]
-                continue
-            else:
-                if n > 0 and key != self.default:
-                    return self.__get(keys=self.__default_filled(keys=keys,n=n))
+            node=self.__db
+
+            for n in range(self.__keysize):
+                key=current_keys[n]
+
+                if key in node:
+                    if n+1 == self.__keysize:
+                        return node[key]
+                    node=node[key]
+                    continue
                 else:
+                    current = current + 1
                     break
+
         return None
