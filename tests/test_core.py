@@ -21,6 +21,19 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(4,mm.get(keys=["a","c","d"]))
         self.assertEqual(5,mm.get(keys=["a",None,"c"]))
 
+    def test_break_out_of_loop(self):
+        mm = core.PatternMatchStore(keysize=3)
+        _=mm.default
+
+        mm.put(keys=["a","b","c"],value=1)
+        mm.put(keys=["a","b","b"],value=2)
+        mm.put(keys=["a","b",_],value=3)
+        #mm.put(keys=["a",_,_],value=4)
+
+        mm.commit()
+
+        self.assertEqual(None,mm.get(keys=["a","c","d"]))
+
     def test_basic_unordered(self):
         mm = core.PatternMatchStore(keysize=3)
         d=mm.default
@@ -38,7 +51,7 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(4,mm.get(keys=["a","c","d"]))
 
     def test_basic_clean(self):
-        mm = core.PatternMatchStore(keysize=3)
+        mm = core.PatternMatchStore(keysize=3,raise_notfound=True)
 
         mm.put(keys=["a","b","c"],value=1)
         mm.commit()
@@ -50,7 +63,7 @@ class CoreTest(unittest.TestCase):
             mm.get(keys=["a","b","c"])
 
     def test_uncommited(self):
-        mm = core.PatternMatchStore(keysize=3)
+        mm = core.PatternMatchStore(keysize=3,raise_notfound=True)
 
         mm.put(keys=["a","b","c"],value=1)
         with self.assertRaises(core.KeyNotFound):

@@ -16,7 +16,7 @@ class PatternMatchStore:
 
     default =None
 
-    def __init__(self,keysize=1):
+    def __init__(self,keysize=1,raise_notfound=False):
         if keysize < 1:
             raise InvalidKeySize
 
@@ -24,6 +24,8 @@ class PatternMatchStore:
         self.__stage = {}
         self.__keysize=keysize
         self.__lock = Lock()
+
+        self.raise_notfound = raise_notfound
 
         self.default=uuid4()
 
@@ -58,7 +60,7 @@ class PatternMatchStore:
         value = self.__get(keys=keys)
         self.__lock.release()
 
-        if value is None:
+        if value is None and self.raise_notfound:
             raise KeyNotFound
 
         return value
@@ -70,7 +72,7 @@ class PatternMatchStore:
         node=self.__db
         for n in range(self.__keysize):
             key=keys[n]
-                    
+
             if key in node:
                 if n+1 == self.__keysize:
                     return node[key]
