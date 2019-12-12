@@ -9,4 +9,7 @@ clean:
 	rm -Rf build dist *.egg-info
 
 test:
-	python3 -m unittest tests/test_core.py
+	python3 -m unittest --failfast tests/test_core.py
+
+test-single:
+	python3 -m unittest --failfast $(TEST)
