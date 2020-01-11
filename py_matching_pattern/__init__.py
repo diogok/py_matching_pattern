@@ -1,7 +1,8 @@
 
 from threading import Lock
 from copy import deepcopy
-from uuid import uuid4
+from uuid import uuid4,UUID
+from typing import Sequence, TypeVar, Generic, Any, Dict,  Mapping, Union, List
 
 class InvalidKeySize(Exception):
     pass
@@ -9,27 +10,38 @@ class InvalidKeySize(Exception):
 class InvalidKeyCount(Exception):
     pass
 
+class InvalidNodeInternalException(Exception):
+    pass
+
 class KeyNotFound(Exception):
     pass
 
-class PatternMatchStore:
+K = TypeVar('K')
+V = TypeVar('V')
 
-    default =None
+class PatternMatchStore(Generic[K,V]):
 
-    def __init__(self,keysize=1,raise_notfound=False):
+    __default: UUID
+
+    __db: Mapping[Any,Any]
+    __lock: Lock
+    __stage: Dict[Any,Any]
+    __keysize: int
+    __raise_notfound: bool
+
+    def __init__(self,keysize: int=1,raise_notfound: bool=False) -> None:
         if keysize < 1:
             raise InvalidKeySize
 
         self.__db = {}
+        self.__lock = Lock()
         self.__stage = {}
         self.__keysize=keysize
-        self.__lock = Lock()
-
-        self.raise_notfound = raise_notfound
+        self.__raise_notfound = raise_notfound
 
         self.default=uuid4()
 
-    def put(self,keys=[],value=None):
+    def put(self,keys: Sequence[K], value: V) -> None:
         if(len(keys)<self.__keysize):
             raise InvalidKeyCount
 
@@ -43,16 +55,16 @@ class PatternMatchStore:
                     node[key]={}
                 node=node[key]
                 
-    def clean(self):
+    def clean(self) -> None:
         self.__stage={}
 
-    def commit(self):
+    def commit(self) -> None:
         dbcopy=deepcopy(self.__stage)
         self.__lock.acquire(blocking=True,timeout=-1)
         self.__db=dbcopy
         self.__lock.release()
     
-    def get(self,keys=[]):
+    def get(self, keys: Sequence[K]) -> Union[V,None,Any]:
         if(len(keys)<self.__keysize):
             raise InvalidKeyCount
 
@@ -60,14 +72,14 @@ class PatternMatchStore:
         value = self.__get(keys=keys)
         self.__lock.release()
 
-        if value is None and self.raise_notfound:
+        if value is None and self.__raise_notfound:
             raise KeyNotFound
 
         return value
 
-    def __default_filled(self,keys,key_mask):
+    def __default_filled(self,keys: Sequence[K], key_mask: str) -> Sequence[Union[K,UUID]]:
         # TODO: there is a better solution
-        new_keys=[]
+        new_keys: List[Union[K,UUID]] =[]
         for n in range(self.__keysize):
             mask = key_mask[n]
             if mask == "1":
@@ -77,13 +89,13 @@ class PatternMatchStore:
         
         return new_keys
 
-    def __get(self,keys=[]):
+    def __get(self,keys: Sequence[K]) -> Union[V,None,Any]:
         int_limit = pow(2,self.__keysize)
         current=1
         
         while current <= int_limit:
-            key_mask = format(int_limit - current,f"0{self.__keysize}b") # eg 010101
-            current_keys = self.__default_filled(keys=keys,key_mask=key_mask) # zeros are default
+            key_mask: str = format(int_limit - current,f"0{self.__keysize}b") # eg 010101
+            current_keys: Sequence[Union[K,UUID]] = self.__default_filled(keys=keys,key_mask=key_mask) # zeros are default
 
             node=self.__db
 
@@ -92,7 +104,8 @@ class PatternMatchStore:
 
                 if key in node:
                     if n+1 == self.__keysize:
-                        return node[key]
+                        v= node[key]
+                        return v
                     node=node[key]
                     continue
                 else:

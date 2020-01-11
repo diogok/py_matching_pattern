@@ -1,10 +1,10 @@
 import unittest
-import py_matching_pattern as core
+from py_matching_pattern import PatternMatchStore, KeyNotFound
 
 class CoreTest(unittest.TestCase):
 
     def test_basic(self):
-        mm = core.PatternMatchStore(keysize=3)
+        mm = PatternMatchStore(keysize=3)
         _=mm.default
 
         mm.put(keys=["a","b","c"],value=1)
@@ -22,7 +22,7 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(5,mm.get(keys=["a",None,"c"]))
 
     def test_break_out_of_loop(self):
-        mm = core.PatternMatchStore(keysize=3)
+        mm = PatternMatchStore(keysize=3)
         _=mm.default
 
         mm.put(keys=["a","b","c"],value=1)
@@ -35,7 +35,7 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(None,mm.get(keys=["a","c","d"]))
 
     def test_back_and_forth(self):
-        mm = core.PatternMatchStore(keysize=3)
+        mm = PatternMatchStore(keysize=3)
         _=mm.default
 
         mm.put(keys=["a","b","c"],value=1)
@@ -58,7 +58,7 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(None,mm.get(keys=["d","d","e"]))
 
     def test_basic_unordered(self):
-        mm = core.PatternMatchStore(keysize=3)
+        mm = PatternMatchStore(keysize=3)
         d=mm.default
 
         mm.put(keys=["a","b",d],value=3)
@@ -74,7 +74,7 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(4,mm.get(keys=["a","c","d"]))
 
     def test_basic_clean(self):
-        mm = core.PatternMatchStore(keysize=3,raise_notfound=True)
+        mm = PatternMatchStore(keysize=3,raise_notfound=True)
 
         mm.put(keys=["a","b","c"],value=1)
         mm.commit()
@@ -82,18 +82,18 @@ class CoreTest(unittest.TestCase):
 
         mm.clean()
         mm.commit()
-        with self.assertRaises(core.KeyNotFound):
+        with self.assertRaises(KeyNotFound):
             mm.get(keys=["a","b","c"])
 
     def test_uncommited(self):
-        mm = core.PatternMatchStore(keysize=3,raise_notfound=True)
+        mm = PatternMatchStore(keysize=3,raise_notfound=True)
 
         mm.put(keys=["a","b","c"],value=1)
-        with self.assertRaises(core.KeyNotFound):
+        with self.assertRaises(KeyNotFound):
             mm.get(keys=["a","b","c"])
 
     def test_uncommited_clean(self):
-        mm = core.PatternMatchStore(keysize=3)
+        mm = PatternMatchStore(keysize=3)
 
         mm.put(keys=["a","b","c"],value=1)
         mm.commit()

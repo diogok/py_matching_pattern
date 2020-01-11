@@ -8,7 +8,10 @@ publish:
 clean:
 	rm -Rf build dist *.egg-info
 
-test:
+test-type:
+	python3 -m mypy --strict py_matching_pattern
+
+test: test-type
 	python3 -m unittest --failfast tests/test_core.py
 
 test-single:
