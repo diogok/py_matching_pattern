@@ -9,13 +9,13 @@ Right now it only supports matching lists of same sizes.
 Import the lib
 
 ```python
-import py_matching_pattern as pm
+import PatternMatchStore from py_matching_pattern
 ```
 
 First you will add initialize a `PatternMatchStore` with a fixed size of keys to match (size of the list).
 
 ```python
-pmdb = core.PatternMatchStore(keysize=3)
+pmdb = PatternMatchStore(keysize=3)
 ```
 
 After that you can add the patterns. Every value is valid match, including `None`.
