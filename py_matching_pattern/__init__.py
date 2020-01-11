@@ -82,8 +82,8 @@ class PatternMatchStore:
         current=1
         
         while current <= int_limit:
-            key_mask = format(int_limit - current,f"0{self.__keysize}b")
-            current_keys = self.__default_filled(keys=keys,key_mask=key_mask)
+            key_mask = format(int_limit - current,f"0{self.__keysize}b") # eg 010101
+            current_keys = self.__default_filled(keys=keys,key_mask=key_mask) # zeros are default
 
             node=self.__db
 
